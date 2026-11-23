@@ -1,0 +1,70 @@
+{
+  "$schema": "https://developers.reddit.com/schema/devvit.json",
+  "name": "skyline-daily",
+  "version": "0.1.0",
+  "post": {
+    "entrypoints": [
+      {
+        "name": "default",
+        "type": "web",
+        "file": "dist/client/splash.html",
+        "height": "regular"
+      },
+      {
+        "name": "game",
+        "type": "web",
+        "file": "dist/client/game.html",
+        "height": "tall"
+      }
+    ]
+  },
+  "server": {
+    "file": "dist/server/index.js"
+  },
+  "permissions": {
+    "redis": true,
+    "journeys": true,
+    "reddit": {
+      "enable": true,
+      "asUser": ["SUBMIT_COMMENT"]
+    }
+  },
+  "settings": {
+    "subreddit": [
+      {
+        "name": "sourceCommunities",
+        "type": "string",
+        "defaultValue": "",
+        "helpText": "Optional. Comma-separated communities to build the city from, e.g. `pics, AskReddit`. Leave empty to use this community.",
+        "validationEndpoint": "/internal/settings/validate-sources"
+      }
+    ]
+  },
+  "triggers": [
+    {
+      "event": "onAppInstall",
+      "endpoint": "/internal/triggers/on-app-install"
+    }
+  ],
+  "scheduler": {
+    "tasks": [
+      {
+        "name": "daily",
+        "cron": "0 0 * * *",
+        "endpoint": "/internal/cron/daily"
+      }
+    ]
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Create today's Skyline post",
+        "postback": "/internal/menu/create-post",
+        "forModerators": true
+      }
+    ]
+  },
+  "marketingAssets": {
+    "icon": "assets/icon.png"
+  }
+}
