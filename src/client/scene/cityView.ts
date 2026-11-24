@@ -115,6 +115,10 @@ export class CityView {
     this.buildings?.setFloorLabels(...args);
   }
 
+  setCollected(collected: ReadonlySet<number>): void {
+    this.buildings?.setCollected(collected);
+  }
+
   setHint(index: number | null): void {
     this.buildings?.setHint(index);
   }

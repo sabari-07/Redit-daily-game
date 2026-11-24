@@ -66,6 +66,20 @@ describe('solver', () => {
     }
   });
 
+  it('every day has a different best route, even with the same posts', () => {
+    const same = posts('fixed', 32);
+    const routes = new Set<string>();
+    for (let d = 0; d < 30; d++) {
+      const day = new Date(Date.UTC(2024, 2, 1 + d)).toISOString().slice(0, 10);
+      const c = buildCity(same, 'sub', day);
+      const r = solveRoute(c)!;
+      // Route = the roofs visited in order, by position (indices alone could repeat by chance).
+      const roofs = [c.startIndex, ...r.moves.map((m) => m.to)].map((i) => `${c.buildings[i].x.toFixed(1)},${c.buildings[i].z.toFixed(1)}`);
+      routes.add(`${roofs.join('>')}|${r.moves.map((m) => m.tool).join('')}`);
+    }
+    expect(routes.size).toBe(30);
+  }, 240_000);
+
   it('nextStep is null at the Summit', () => {
     const c = cities[0];
     expect(nextStep(c, { pos: c.summitIndex, glideLeft: 1, grappleLeft: 1, collapsed: [] })).toBeNull();

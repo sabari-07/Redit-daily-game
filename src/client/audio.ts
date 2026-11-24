@@ -1,6 +1,6 @@
 /**
  * Procedural sound kit (WebAudio, no audio files): soft bells, airy whooshes and thuds
- * through a light reverb, plus a quiet evening-city ambience.
+ * through a light reverb. Sounds play only on game events: there is no background loop.
  *
  * Sound is ON by default. Browsers only allow audio after the first user gesture, so the
  * engine unlocks itself on the first tap/click/key anywhere on the page.
@@ -9,11 +9,9 @@
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let reverbIn: GainNode | null = null;
-let ambience: GainNode | null = null;
 let muted = readMuted();
 
 const MASTER = 0.6;
-const AMBIENCE = 0.5;
 
 function readMuted(): boolean {
   try {
@@ -74,7 +72,6 @@ export function initAudio(): void {
     conv.connect(master);
 
     whiteNoise = noiseBuffer(ctx, 2);
-    startAmbience();
   }
   if (ctx.state === 'suspended') void ctx.resume();
 }
@@ -88,47 +85,6 @@ export function installAudioUnlock(): void {
   };
   window.addEventListener('pointerdown', unlock, true);
   window.addEventListener('keydown', unlock, true);
-}
-
-function startAmbience(): void {
-  if (!ctx || !master) return;
-  ambience = ctx.createGain();
-  ambience.gain.value = AMBIENCE;
-  ambience.connect(master);
-
-  // Distant traffic hum: looping brown noise through a low-pass filter.
-  const hum = ctx.createBufferSource();
-  hum.buffer = noiseBuffer(ctx, 6, true);
-  hum.loop = true;
-  const lp = ctx.createBiquadFilter();
-  lp.type = 'lowpass';
-  lp.frequency.value = 380;
-  const humGain = ctx.createGain();
-  humGain.gain.value = 0.09;
-  hum.connect(lp).connect(humGain).connect(ambience);
-  hum.start();
-
-  // Soft warm pad (A major 9 voicing) with a slow swell.
-  const padGain = ctx.createGain();
-  padGain.gain.value = 0.022;
-  const padLp = ctx.createBiquadFilter();
-  padLp.type = 'lowpass';
-  padLp.frequency.value = 1100;
-  padGain.connect(padLp).connect(ambience);
-  for (const [f, det] of [[110, -4], [164.81, 3], [246.94, -2], [277.18, 5], [329.63, 0]] as const) {
-    const o = ctx.createOscillator();
-    o.type = 'triangle';
-    o.frequency.value = f;
-    o.detune.value = det;
-    o.connect(padGain);
-    o.start();
-  }
-  const lfo = ctx.createOscillator();
-  const lfoAmt = ctx.createGain();
-  lfo.frequency.value = 0.07;
-  lfoAmt.gain.value = 0.012;
-  lfo.connect(lfoAmt).connect(padGain.gain);
-  lfo.start();
 }
 
 export function setMuted(m: boolean): void {
@@ -295,5 +251,4 @@ export function dispose(): void {
   ctx = null;
   master = null;
   reverbIn = null;
-  ambience = null;
 }

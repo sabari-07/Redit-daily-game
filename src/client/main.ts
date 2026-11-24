@@ -165,6 +165,7 @@ async function main(): Promise<void> {
       state,
       hero,
       camera,
+      cityView,
       route: solveRoute(city),
       screenOf: (i: number): [number, number] => {
         const b = city.buildings[i];
@@ -227,6 +228,7 @@ async function main(): Promise<void> {
       effects.spawnLandingDust(toB.x, roofY(toB.height), toB.z);
       const before = state.moveHistory[state.moveHistory.length - 1]?.before;
       if (run.goldCollected.has(run.pos) && before && !before.goldCollected.has(run.pos)) {
+        cityView.setCollected(run.goldCollected); // the coin is picked up and disappears
         effects.spawnGoldSparkles(toB.x, roofY(toB.height), toB.z);
         effects.spawnFloatingText(toB.x, roofY(toB.height), toB.z, '+100 GOLD');
         playGoldChime();
@@ -246,6 +248,7 @@ async function main(): Promise<void> {
     if (!state.run) return;
     const b = city.buildings[state.run.pos];
     hero.placeOnBuilding(b.x, b.z, b.height);
+    cityView.setCollected(state.run.goldCollected); // Undo puts the coin back
     clearHint();
     arc.hide();
     inspector.hide();
@@ -258,6 +261,7 @@ async function main(): Promise<void> {
     hero.placeOnBuilding(startB.x, startB.z, startB.height);
     hero.lookToward(summitB.x, summitB.z);
     hero.clearPath();
+    cityView.setCollected(new Set());
     clearHint();
     arc.hide();
     inspector.hide();

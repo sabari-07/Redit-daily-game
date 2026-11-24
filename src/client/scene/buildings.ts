@@ -157,7 +157,7 @@ export class CityBuildings {
   private hintIndex: number | null = null;
   private city: City | null = null;
   private summitBeam: THREE.Mesh | null = null;
-  private goldCoins: Array<{ mesh: THREE.Mesh; baseY: number }> = [];
+  private goldCoins: Array<{ mesh: THREE.Mesh; baseY: number; index: number }> = [];
 
   constructor(private readonly scene: THREE.Scene) {
     this.root = new THREE.Group();
@@ -358,7 +358,7 @@ export class CityBuildings {
       const baseY = roofTop + 1.5;
       coin.position.set(b.x, baseY, b.z);
       coin.raycast = noRaycast;
-      this.goldCoins.push({ mesh: coin, baseY });
+      this.goldCoins.push({ mesh: coin, baseY, index: b.index });
       this.root.add(coin);
     }
 
@@ -434,6 +434,11 @@ export class CityBuildings {
     r.material.color.copy(COLORS.hint);
     r.mesh.visible = true;
     r.mesh.scale.setScalar(1.3);
+  }
+
+  /** Hides the coins on roofs already collected this run (and shows them again after Undo/Restart). */
+  setCollected(collected: ReadonlySet<number>): void {
+    for (const c of this.goldCoins) c.mesh.visible = !collected.has(c.index);
   }
 
   /** Shows "+3" / "âˆ’2" floor tags on every roof within Glide range of `from` (null hides all). */
