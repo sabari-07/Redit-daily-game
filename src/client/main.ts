@@ -29,6 +29,22 @@ const roofY = (height: number): number => height * FLOOR_HEIGHT + ROOF_TOP;
 async function main(): Promise<void> {
   installAudioUnlock();
 
+  // The page must never zoom: only the city camera does. Safari sends gesture* events for
+  // pinches and ignores user-scalable=no, and a pinch starting on the HUD would zoom the page.
+  for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) {
+    document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
+  }
+  document.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 1) e.preventDefault();
+  }, { passive: false });
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', (e) => {
+    // A quick double tap outside the city would zoom the page on some phones.
+    const now = Date.now();
+    if (now - lastTouchEnd < 300 && !(e.target instanceof HTMLCanvasElement)) e.preventDefault();
+    lastTouchEnd = now;
+  }, { passive: false });
+
   const canvas = document.getElementById('game-canvas') as HTMLCanvasElement | null;
   const hud = document.getElementById('hud');
   if (!canvas || !hud) throw new Error('Missing game elements');

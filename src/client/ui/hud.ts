@@ -30,7 +30,6 @@ export class GameHUD {
   private legend: HTMLElement;
   private bottomDock: HTMLElement;
   private startBtn: HTMLButtonElement;
-  private clockPill: HTMLElement;
   private undoBtn: HTMLButtonElement;
   private hintBtn: HTMLButtonElement;
   private movesEl: HTMLElement;
@@ -166,11 +165,8 @@ export class GameHUD {
     this.startBtn.setAttribute('aria-label', 'Start the clock');
     this.startBtn.append(el('span', 'start-label', 'Start'), el('span', 'start-sub', 'clock starts now'));
     this.startBtn.addEventListener('click', opts.onStart);
-    this.clockPill = el('div', 'clock-pill');
-    this.clockPill.setAttribute('aria-live', 'off');
-    this.clockPill.hidden = true;
 
-    this.bottomDock.append(tools, act, this.startBtn, this.clockPill);
+    this.bottomDock.append(tools, act, this.startBtn);
     container.append(this.topBar, this.legend, this.bottomDock);
 
     const keyHandler = (e: KeyboardEvent): void => {
@@ -223,11 +219,9 @@ export class GameHUD {
   tick(): void {
     const started = this.state.clockStartedAt !== null;
     this.startBtn.hidden = started;
-    this.clockPill.hidden = !started;
     const t = formatClock(this.state.elapsedMs());
     if (this.timeEl.textContent !== t) {
       this.timeEl.textContent = t;
-      this.clockPill.textContent = `⏱ ${t}`;
     }
     const s = String(this.state.projectedScore());
     if (this.scoreEl.textContent !== s) this.scoreEl.textContent = s;

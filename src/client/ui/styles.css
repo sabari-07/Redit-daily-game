@@ -1069,3 +1069,8 @@ html, body, #game-canvas { background: #141a2c; }
   .start-btn, .clock-pill { min-width: 92px; }
   .toast-container { top: 100px; }
 }
+/* The page never zooms; the HUD keeps its size. Only the 3D city zooms (camera). */
+html, body { touch-action: none; overscroll-behavior: none; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.modal-overlay { touch-action: pan-y; }
+/* With the clock in the top bar only, the bottom bar has no empty slot once the run starts. */
+.start-btn[hidden] { display: none; }

@@ -39,7 +39,9 @@ export class CameraController {
     canvas.addEventListener('mousedown', this.onMouseDown);
     canvas.addEventListener('mousemove', this.onMouseMove);
     window.addEventListener('mouseup', this.onMouseUp);
-    canvas.addEventListener('wheel', this.onWheel, { passive: false });
+    // On the window, so a wheel/trackpad pinch over the header or footer zooms the city too.
+    window.addEventListener('wheel', this.onWheel, { passive: false });
+    window.addEventListener('keydown', this.onZoomKey);
     canvas.addEventListener('touchstart', this.onTouchStart, { passive: false });
     canvas.addEventListener('touchmove', this.onTouchMove, { passive: false });
     canvas.addEventListener('touchend', this.onTouchEnd);
@@ -187,13 +189,40 @@ export class CameraController {
 
   private onMouseUp = (): void => { this.isDragging = false; };
 
-  private onWheel = (e: WheelEvent): void => {
-    e.preventDefault();
+  /** Zooms the city camera. Positive = out. */
+  zoomBy(amount: number): void {
     this.onUserInput?.();
     this.tween = null;
-    this.dist = Math.max(this.minDist, Math.min(this.maxDist, this.dist + e.deltaY * 0.05));
+    this.dist = Math.max(this.minDist, Math.min(this.maxDist, this.dist + amount));
+  }
+
+  /**
+   * Mouse wheel / trackpad pinch (ctrl+wheel) anywhere on the game: never zoom the page.
+   * Inside an open popup a plain wheel scrolls the popup instead.
+   */
+  private onWheel = (e: WheelEvent): void => {
+    const inPopup = e.target instanceof Element && e.target.closest('.modal-overlay') !== null;
+    if (inPopup && !e.ctrlKey) return;
+    e.preventDefault();
+    if (inPopup) return;
+    // Trackpad pinches send small deltas, wheel notches ~100: scale, then cap each step.
+    const step = e.ctrlKey ? e.deltaY * 0.35 : e.deltaY * 0.05;
+    this.zoomBy(Math.max(-8, Math.min(8, step)));
   };
 
+  /** Ctrl/Cmd + plus, minus, 0 zoom the city instead of the browser page. */
+  private onZoomKey = (e: KeyboardEvent): void => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    if (e.key === '+' || e.key === '=') {
+      e.preventDefault();
+      this.zoomBy(-6);
+    } else if (e.key === '-' || e.key === '_') {
+      e.preventDefault();
+      this.zoomBy(6);
+    } else if (e.key === '0') {
+      e.preventDefault();
+    }
+  };
   private onKeyDown = (e: KeyboardEvent): void => {
     const panSpeed = 2;
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'A', 'd', 'D', 'w', 'W', 's', 'S', 'q', 'Q', 'e', 'E'].includes(e.key)) this.onUserInput?.();
@@ -251,7 +280,8 @@ export class CameraController {
     canvas.removeEventListener('mousedown', this.onMouseDown);
     canvas.removeEventListener('mousemove', this.onMouseMove);
     window.removeEventListener('mouseup', this.onMouseUp);
-    canvas.removeEventListener('wheel', this.onWheel);
+    window.removeEventListener('wheel', this.onWheel);
+    window.removeEventListener('keydown', this.onZoomKey);
     canvas.removeEventListener('touchstart', this.onTouchStart);
     canvas.removeEventListener('touchmove', this.onTouchMove);
     canvas.removeEventListener('touchend', this.onTouchEnd);
