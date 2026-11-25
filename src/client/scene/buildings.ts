@@ -33,9 +33,10 @@ function makeSignTexture(b: Building): THREE.CanvasTexture {
   const SIGN_W = 256;
   const SIGN_H = 96;
   const canvas = document.createElement('canvas');
-  canvas.width = SIGN_W;
-  canvas.height = SIGN_H;
+  canvas.width = SIGN_W * 2;
+  canvas.height = SIGN_H * 2;
   const ctx = canvas.getContext('2d')!;
+  ctx.scale(2, 2); // 2x for sharp text on phones
 
   ctx.fillStyle = 'rgba(18,22,34,0.92)';
   roundRect(ctx, 4, 4, SIGN_W - 8, SIGN_H - 8, 12);
@@ -125,9 +126,10 @@ function floorLabelTexture(rise: number): THREE.CanvasTexture {
   const hit = labelCache.get(key);
   if (hit) return hit;
   const c = document.createElement('canvas');
-  c.width = 96;
-  c.height = 56;
+  c.width = 192;
+  c.height = 112;
   const g = c.getContext('2d')!;
+  g.scale(2, 2); // 2x for sharp text on phones
   g.fillStyle = bg;
   g.strokeStyle = 'rgba(255,255,255,0.85)';
   g.lineWidth = 4;

@@ -172,9 +172,10 @@ export class Hero {
 
   private makeMarker(): THREE.Sprite {
     const c = document.createElement('canvas');
-    c.width = 256;
-    c.height = 150;
+    c.width = 512;
+    c.height = 300;
     const g = c.getContext('2d')!;
+    g.scale(2, 2); // drawn at 2x so it stays sharp on high-density phone screens
     g.fillStyle = '#ffb300';
     g.strokeStyle = '#1a1200';
     g.lineWidth = 8;
@@ -193,8 +194,7 @@ export class Hero {
     g.font = 'bold 54px system-ui, sans-serif';
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.fillText('YOU', 128, 50);
-    const tex = new THREE.CanvasTexture(c);
+    g.fillText('YOU', 128, 50);    const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
     const mat = new THREE.SpriteMaterial({ map: tex, depthTest: false, depthWrite: false, sizeAttenuation: false, transparent: true });
     this.disposables.push(mat, tex);

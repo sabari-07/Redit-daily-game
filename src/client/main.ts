@@ -13,6 +13,7 @@ import { ResultCard } from './ui/result.js';
 import { LeaderboardPanel } from './ui/leaderboard.js';
 import { HintsManager } from './ui/hints.js';
 import { closeModal } from './ui/modal.js';
+import { installUiScale } from './ui/uiScale.js';
 import { showErrorState, showToast } from './ui/toast.js';
 import { init as apiInit, submitRun, startClock } from './api.js';
 import {
@@ -28,6 +29,7 @@ const roofY = (height: number): number => height * FLOOR_HEIGHT + ROOF_TOP;
 
 async function main(): Promise<void> {
   installAudioUnlock();
+  installUiScale();
 
   // The page must never zoom: only the city camera does. Safari sends gesture* events for
   // pinches and ignores user-scalable=no, and a pinch starting on the HUD would zoom the page.

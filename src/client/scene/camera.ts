@@ -219,8 +219,6 @@ export class CameraController {
     } else if (e.key === '-' || e.key === '_') {
       e.preventDefault();
       this.zoomBy(6);
-    } else if (e.key === '0') {
-      e.preventDefault();
     }
   };
   private onKeyDown = (e: KeyboardEvent): void => {

@@ -32,16 +32,16 @@ export class SceneRenderer {
   constructor(canvas: HTMLCanvasElement) {
     this.tier = detectTier();
 
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: this.tier !== 'low', powerPreference: 'high-performance' });
+    // Native MSAA on every tier: phones render straight to the screen, so this is what keeps edges smooth.
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 0.95;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.shadowMap.enabled = this.tier !== 'low';
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-    const isMobile = window.matchMedia('(pointer: coarse)').matches;
-    const maxDpr = isMobile ? 1.5 : 2;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxDpr));
+    // Render at the screen's real sharpness (phones are 2-3x). Capped at 2 for speed; it only drops if the device is too slow.
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     this.camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 1000);
 
@@ -54,7 +54,9 @@ export class SceneRenderer {
 
   /** Sets up the post-processing composer for a given scene */
   setupComposer(scene: THREE.Scene): void {
-    if (this.tier === 'low') return;
+    // Only desktops get bloom + SMAA. Phones render directly with native MSAA: the composer's
+    // render targets have no anti-aliasing, which made the phone view look soft and jagged.
+    if (this.tier !== 'high') return;
 
     const { width, height } = this.getSize();
     this.composer = new EffectComposer(this.renderer);
@@ -108,6 +110,10 @@ export class SceneRenderer {
         this.degradeTimer += dt;
         if (this.degradeTimer > 2000) {
           this.tier = this.tier === 'high' ? 'medium' : 'low';
+          if (this.tier === 'low') {
+            this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+            this.resize();
+          }
           this.degradeTimer = 0;
           this.frameTimeSamples = [];
         }
@@ -116,7 +122,7 @@ export class SceneRenderer {
       }
     }
 
-    if (this.composer && this.tier !== 'low') {
+    if (this.composer && this.tier === 'high') {
       this.composer.render();
     } else {
       this.renderer.render(scene, this.camera);

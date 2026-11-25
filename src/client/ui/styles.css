@@ -1074,3 +1074,15 @@ html, body { touch-action: none; overscroll-behavior: none; -webkit-text-size-ad
 .modal-overlay { touch-action: pan-y; }
 /* With the clock in the top bar only, the bottom bar has no empty slot once the run starts. */
 .start-btn[hidden] { display: none; }
+/* Browser page zoom correction (see ui/uiScale.ts): the HUD keeps its real size, only the city changes.
+   Only active when the page is actually zoomed (html.ui-scaled), so normal views are never resampled. */
+html.ui-scaled #hud {
+  inset: auto;
+  top: 0;
+  left: 0;
+  width: calc(100vw / var(--ui, 1));
+  height: calc(100dvh / var(--ui, 1));
+  transform: scale(var(--ui, 1));
+  transform-origin: 0 0;
+}
+html.ui-scaled .modal-card, html.ui-scaled .toast-container, html.ui-scaled .splash > * { zoom: var(--ui, 1); }

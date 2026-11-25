@@ -3,6 +3,7 @@ import { buildCity } from '../shared/city.js';
 import { utcDayKey } from '../shared/date.js';
 import type { City, InitResponse, RawPost } from '../shared/types.js';
 import { CityView } from './scene/cityView.js';
+import { installUiScale } from './ui/uiScale.js';
 import { isMockMode, getMockInitResponse } from './mock.js';
 
 function generateFixturePosts(n: number): RawPost[] {
@@ -45,7 +46,7 @@ function buildMiniScene(city: City): MiniScene {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   const w = canvas.clientWidth || window.innerWidth;
   const h = canvas.clientHeight || window.innerHeight;
   renderer.setSize(w, h, false);
@@ -67,6 +68,7 @@ function buildMiniScene(city: City): MiniScene {
   return { scene: view.scene, renderer, camera, radius, midY: (sumH / city.buildings.length) * 0.5 };
 }
 async function main(): Promise<void> {
+  installUiScale();
   // Show CSS gradient + title immediately (never block on 3D)
   const splashEl = document.getElementById('splash')!;
   splashEl.style.display = 'flex';
